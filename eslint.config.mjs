@@ -146,7 +146,7 @@ export default [
           iife: createQueryRule([
             {
               selector:
-                "Program > :not(ExpressionStatement[expression.type=CallExpression][expression.callee.type=/FunctionExpression/])",
+                "Program > :not(ExpressionStatement[expression.type=CallExpression][expression.callee.type=/^FunctionExpression$/])",
               message: "All extension code must be within (function (Scratch) { ... })(Scratch);",
             },
           ]),
