@@ -24,9 +24,10 @@ labels: bug
 
 ## Environment
 
-- **Project Name version:**
+- **UnoWarp Extensions version/commit:**
 - **Operating system:**
-- <!-- Add any other relevant environment details, such as runtime versions. -->
+- **Browser:**
+- **Node.js version (if relevant):**
 
 ## Additional Context
 

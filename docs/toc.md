@@ -1,8 +1,7 @@
-# Project Name Documentation
+# UnoWarp Extensions Documentation
 
 ## Table of Contents
 
-<!-- It's important to keep documentation modular. Replace the entries below with guides for your project. Include as many files as you can, all explaining how to do a set thing or a concept of something used in the software, rather than just one file as a general guide. -->
-
-- [Doing Something](./doing-something.md) — _Replace with your first guide_
-- [Doing Another Thing](./doing-another-thing.md) — _Replace with your second guide_
+- [Overview](./overview.md) — What the project does and how data flows through the gallery.
+- [Development Guide](./development.md) — Local setup, scripts, and contributor workflow.
+- [Adding Extensions](./adding-extensions.md) — Extension file structure, metadata headers, and submission checks.

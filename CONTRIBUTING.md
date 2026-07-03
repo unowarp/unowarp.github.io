@@ -1,4 +1,4 @@
-# Contributing to Project Name
+# Contributing to UnoWarp Extensions
 
 Thank you for your interest in contributing! This document outlines the process for contributing to this project.
 
@@ -48,9 +48,14 @@ Pull requests that introduce large or breaking changes should be discussed in an
 
 ## Style Guidelines
 
-<!-- Document the coding style, linter configuration, or formatting rules for this project. -->
+Please follow the configured tooling before opening a pull request:
 
-Please ensure your code is properly formatted before submitting a pull request.
+```sh
+npm run lint
+npm run format:check
+```
+
+If you add or modify extension files under `src/extensions/**/*.js`, ensure they satisfy the custom extension rules in `eslint.config.mjs`.
 
 ## Commit Messages
 

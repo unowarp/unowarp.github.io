@@ -1,7 +1,9 @@
-# `extensions/`
+# extensions/
 
-You can find extensions under this folder, normally under this scheme:
+Store extension files in this folder using this scheme:
 
 ```text
-extensions/USERNAME/EXTENSION.js
+src/extensions/USERNAME/EXTENSION.js
 ```
+
+When adding a file here, also add its relative path to `src/extensions.json`.
