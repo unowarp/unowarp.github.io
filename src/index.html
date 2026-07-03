@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UnoWarp Extensions</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+
+    <!-- Google Fonts: Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              tw: {
+                violet: "#8b5cf6",
+                violetHover: "#7c3aed",
+                bg: "#111111",
+                card: "#1e1e1e",
+                cardHover: "#2a2a2a",
+                text: "#f3f4f6",
+                textMuted: "#9ca3af",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background-color: #111111;
+        color: #f3f4f6;
+        font-family: "Roboto", sans-serif;
+      }
+
+      /* Custom scrollbar with completely flat angles */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #111111;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 0px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+
+      .toast-enter {
+        animation: slideIn 0.3s ease forwards;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <!-- Edge-to-Edge Purple Headline Marquee (Only shows if new extensions exist) -->
+    <div
+      id="marqueeContainer"
+      class="hidden bg-purple-950/40 border-b border-tw-violet/30 text-tw-violet py-2.5 overflow-hidden w-full"
+    >
+      <marquee
+        id="marqueeText"
+        class="font-semibold uppercase tracking-wider text-sm cursor-pointer block"
+        scrollamount="6"
+        onmouseover="this.stop()"
+        onmouseout="this.start()"
+      >
+        <!-- Dynamically populated marquee content -->
+      </marquee>
+    </div>
+
+    <!-- Main Content Grid Wrapper -->
+    <div class="max-w-7xl mx-auto w-full p-4 md:p-8">
+      <!-- Header -->
+      <header
+        class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4"
+      >
+        <div>
+          <h1 class="text-3xl font-bold text-tw-violet flex items-center gap-3">
+            <img src="icon.svg" alt="UnoWarp Logo" class="w-8 h-8" />
+            UnoWarp Extensions
+          </h1>
+          <p class="text-tw-textMuted mt-1">
+            Explore unsandboxed extensions developed by the community, for the
+            community
+          </p>
+        </div>
+
+        <div class="relative w-full md:w-96">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search extensions..."
+            class="w-full bg-tw-card border border-gray-700 rounded-none py-2 px-4 pl-10 text-white placeholder-gray-500 focus:outline-none focus:border-tw-violet focus:ring-1 focus:ring-tw-violet transition-colors"
+          />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 absolute left-3 top-2.5 text-gray-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+      </header>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="flex justify-center items-center py-20">
+        <svg
+          class="animate-spin h-10 w-10 text-tw-violet"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+      </div>
+
+      <!-- Error State -->
+      <div
+        id="errorState"
+        class="hidden bg-red-900/30 border border-red-500 rounded-none p-6 text-center"
+      >
+        <h2 class="text-xl font-semibold text-red-400 mb-2">
+          Failed to Load Extensions
+        </h2>
+        <p id="errorMessage" class="text-gray-300">
+          Make sure you are serving this via a web server (like GitHub Pages or
+          Live Server), not via the file:// protocol.
+        </p>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div
+        id="galleryGrid"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden"
+      >
+        <!-- Cards will be injected here -->
+      </div>
+
+      <!-- No Results -->
+      <div id="noResults" class="hidden py-20 text-center text-tw-textMuted">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-16 w-16 mx-auto mb-4 text-gray-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <p class="text-xl">No extensions found matching your search.</p>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div
+      id="toastContainer"
+      class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"
+    ></div>
+
+    <script>
+      let allExtensions = [];
+      let galleryCurrentDate = new Date(); // Fallback date
+
+      // Utilities
+      function parseAuthorString(str) {
+        const match = str.match(/^(.*?)(?:\s*<([^>]+)>)?$/);
+        if (!match) return { name: str, url: null };
+        return {
+          name: match[1].trim(),
+          url: match[2] ? match[2].trim() : null,
+        };
+      }
+
+      function generateAuthorLink(authorData) {
+        if (authorData.url) {
+          return `<a href="${authorData.url}" target="_blank" class="text-tw-violet hover:underline">${authorData.name}</a>`;
+        }
+        return `<span class="text-gray-300">${authorData.name}</span>`;
+      }
+
+      // Check if a date string in format "M/D/YYYY" is brand new (within 30 days of the dynamically fetched current date)
+      function checkIsBrandNew(createdStr, currentDate) {
+        if (!createdStr) return false;
+        const parts = createdStr.split("/");
+        if (parts.length !== 3) return false;
+        const month = parseInt(parts[0], 10);
+        const day = parseInt(parts[1], 10);
+        const year = parseInt(parts[2], 10);
+
+        const createdDate = new Date(year, month - 1, day);
+
+        const diffTime = currentDate - createdDate;
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+        return diffDays >= 0 && diffDays <= 30;
+      }
+
+      function parseExtensionHeader(jsCode, path, currentDate) {
+        const lines = jsCode.split(/\r?\n/);
+        const metadata = {
+          path: path,
+          Original: [],
+        };
+
+        for (const line of lines) {
+          if (line.trim() === "") continue;
+          if (!line.startsWith("//")) break;
+
+          const match = line.match(/^\/\/\s*([a-zA-Z0-9_]+):\s*(.*)$/);
+          if (match) {
+            const key = match[1];
+            const value = match[2];
+
+            if (key === "Original") {
+              metadata.Original.push(value);
+            } else {
+              metadata[key] = value;
+            }
+          }
+        }
+
+        // Detect if this extension is brand new using fetched date
+        const isNew = checkIsBrandNew(metadata.Created, currentDate);
+
+        return {
+          path: path,
+          Name: metadata.Name || path.split("/").pop().replace(".js", ""),
+          ID: metadata.ID || "unknown",
+          Description: metadata.Description || "No description provided.",
+          By: metadata.By || "Unknown Author",
+          Original: metadata.Original,
+          License: metadata.License || "Unknown",
+          Version: metadata.Version || "1.0.0",
+          Created: metadata.Created || null,
+          isNew: isNew,
+          searchIndex: (
+            metadata.Name +
+            " " +
+            metadata.Description +
+            " " +
+            metadata.By
+          ).toLowerCase(),
+        };
+      }
+
+      function showToast(message) {
+        const container = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+        toast.className =
+          "toast-enter bg-tw-card border border-gray-700 text-white px-4 py-3 rounded-none shadow-lg flex items-center gap-2";
+        toast.innerHTML = `
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                ${message}
+            `;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          toast.style.transform = "translateY(100%)";
+          toast.style.transition = "all 0.3s ease";
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      // Populate scrolling headline marquee for brand-new extensions
+      function updateMarquee(extensions) {
+        const marqueeContainer = document.getElementById("marqueeContainer");
+        const marqueeText = document.getElementById("marqueeText");
+
+        const brandNewExtensions = extensions.filter((ext) => ext.isNew);
+
+        if (brandNewExtensions.length === 0) {
+          marqueeContainer.classList.add("hidden");
+          return;
+        }
+
+        marqueeContainer.classList.remove("hidden");
+
+        // Construct the marquee text announcements
+        const textParts = brandNewExtensions.map((ext) => {
+          return `NEW EXTENSION: <span class="text-white font-bold">${ext.Name}</span> by ${parseAuthorString(ext.By).name}!`;
+        });
+
+        // Combine messages with clear spacing
+        const joinedMessage = textParts.join(
+          " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ",
+        );
+        marqueeText.innerHTML = joinedMessage;
+      }
+
+      // DOM Rendering
+      function renderCards(extensions) {
+        const grid = document.getElementById("galleryGrid");
+        const noResults = document.getElementById("noResults");
+
+        grid.innerHTML = "";
+
+        if (extensions.length === 0) {
+          grid.classList.add("hidden");
+          noResults.classList.remove("hidden");
+          return;
+        }
+
+        grid.classList.remove("hidden");
+        noResults.classList.add("hidden");
+
+        extensions.forEach((ext) => {
+          const authorData = parseAuthorString(ext.By);
+          const originalHtml =
+            ext.Original.length > 0
+              ? `<div class="text-xs text-tw-textMuted mt-1">
+                        <span class="font-semibold text-gray-400">Originals:</span> 
+                        ${ext.Original.map((orig) => generateAuthorLink(parseAuthorString(orig))).join(", ")}
+                       </div>`
+              : "";
+
+          const baseURL = window.location.href
+            .split("/")
+            .slice(0, -1)
+            .join("/");
+          const extensionURL = `${baseURL}/extensions/${ext.path}`;
+
+          const card = document.createElement("div");
+          card.className =
+            "bg-tw-card rounded-none p-5 border border-gray-800 hover:border-gray-600 hover:bg-tw-cardHover transition-all flex flex-col h-full shadow-lg relative";
+
+          // Add a custom visual badge if brand new
+          const brandNewBadge = ext.isNew
+            ? `<span class="bg-tw-violet text-white text-[10px] font-bold tracking-widest px-2 py-0.5 ml-2 rounded-none inline-block align-middle select-none">NEW</span>`
+            : "";
+
+          card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <h2 class="text-xl font-bold text-white leading-tight flex items-center flex-wrap gap-1">
+                          ${ext.Name}
+                          ${brandNewBadge}
+                        </h2>
+                        <span class="bg-gray-800 text-gray-300 text-xs font-mono px-2 py-1 rounded-none border border-gray-700">${ext.ID}</span>
+                    </div>
+                    
+                    <p class="text-sm text-gray-300 flex-grow mb-4 leading-relaxed">${ext.Description}</p>
+                    
+                    <div class="mt-auto pt-4 border-t border-gray-800 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <div class="text-sm">
+                                <span class="text-tw-textMuted">By</span> ${generateAuthorLink(authorData)}
+                            </div>
+                            <span class="text-xs font-mono bg-gray-800/50 text-gray-400 px-2 py-0.5 rounded-none">${ext.Version}</span>
+                        </div>
+                        
+                        ${originalHtml}
+                        
+                        <div class="flex justify-between items-center pt-2">
+                            <span class="text-xs text-gray-500 border border-gray-700 rounded-none px-1.5 py-0.5">${ext.License}</span>
+                            <a href="${extensionURL}" download="${ext.path.split("/").pop()}" class="text-sm bg-tw-violet hover:bg-tw-violetHover text-white font-medium py-1.5 px-3 rounded-none flex items-center gap-1.5 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                                Download
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+          grid.appendChild(card);
+        });
+      }
+
+      // Fetch dynamic UTC date from a live web service API with automatic fallback
+      async function fetchCurrentDate() {
+        try {
+          const res = await fetch(
+            "https://worldtimeapi.org/api/timezone/Etc/UTC",
+          );
+          if (!res.ok) throw new Error("Time API non-200 status");
+          const data = await res.json();
+          if (data && data.datetime) {
+            return new Date(data.datetime);
+          }
+        } catch (e) {
+          console.warn(
+            "Could not retrieve date from WorldTimeAPI. Falling back to local system clock.",
+            e,
+          );
+        }
+        return new Date(); // Fallback to client system clock
+      }
+
+      // Initialization Pipeline
+      async function init() {
+        const loading = document.getElementById("loadingState");
+        const errorState = document.getElementById("errorState");
+        const errorMessage = document.getElementById("errorMessage");
+        const searchInput = document.getElementById("searchInput");
+
+        try {
+          // Dynamic time service fetch
+          galleryCurrentDate = await fetchCurrentDate();
+
+          const listRes = await fetch("extensions.json");
+          if (!listRes.ok) throw new Error("Failed to load extensions.json");
+          const extensionPaths = await listRes.json();
+
+          const fetchPromises = extensionPaths.map(async (path) => {
+            try {
+              const fileRes = await fetch(`extensions/${path}`);
+              if (!fileRes.ok) throw new Error(`Could not fetch ${path}`);
+              const jsCode = await fileRes.text();
+              return parseExtensionHeader(jsCode, path, galleryCurrentDate);
+            } catch (e) {
+              console.error(`Error processing ${path}:`, e);
+              return null;
+            }
+          });
+
+          const parsedData = await Promise.all(fetchPromises);
+          allExtensions = parsedData.filter((ext) => ext !== null);
+
+          // Update marquee at top
+          updateMarquee(allExtensions);
+
+          loading.classList.add("hidden");
+          renderCards(allExtensions);
+
+          // Setup Search Logic
+          searchInput.addEventListener("input", (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = allExtensions.filter((ext) =>
+              ext.searchIndex.includes(query),
+            );
+            renderCards(filtered);
+          });
+        } catch (err) {
+          loading.classList.add("hidden");
+          errorState.classList.remove("hidden");
+          errorMessage.innerText =
+            err.message +
+            ". Are you running this over HTTP/HTTPS? file:// won't work due to CORS.";
+          console.error(err);
+        }
+      }
+
+      window.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
+</html>
