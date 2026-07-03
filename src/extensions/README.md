@@ -6,4 +6,11 @@ Store extension files in this folder using this scheme:
 src/extensions/USERNAME/EXTENSION.js
 ```
 
-When adding a file here, also add its relative path to `src/extensions.json`.
+When adding a file here, add an entry to `src/extensions.json` that is relative
+to `src/extensions/` (without the `src/extensions/` prefix).
+
+Example entry format:
+
+```json
+["USERNAME/EXTENSION.js"]
+```
