@@ -1,8 +1,8 @@
 {
   "name": "@unowarp/unowarp.github.io",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "private": true,
-  "description": "Tooling for linting, formatting, and hosting the UnoWarp GitHub Pages site.",
+  "description": "Explore unsandboxed extensions developed by the community, for the community",
   "scripts": {
     "lint": "npm run lint:eslint && npm run lint:html && npm run lint:md",
     "lint:eslint": "eslint . --ext .js,.mjs,.cjs --max-warnings=0 --no-error-on-unmatched-pattern",
