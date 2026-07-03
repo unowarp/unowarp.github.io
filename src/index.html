@@ -208,11 +208,32 @@
         };
       }
 
-      function generateAuthorLink(authorData) {
-        if (authorData.url) {
-          return `<a href="${authorData.url}" target="_blank" class="text-tw-violet hover:underline">${authorData.name}</a>`;
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function isSafeHttpUrl(url) {
+        if (!url) return false;
+        try {
+          const parsed = new URL(url);
+          return parsed.protocol === "http:" || parsed.protocol === "https:";
+        } catch {
+          return false;
         }
-        return `<span class="text-gray-300">${authorData.name}</span>`;
+      }
+
+      function generateAuthorLink(authorData) {
+        const safeName = escapeHtml(authorData.name || "Unknown Author");
+        if (isSafeHttpUrl(authorData.url)) {
+          const safeUrl = escapeHtml(authorData.url);
+          return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-tw-violet hover:underline">${safeName}</a>`;
+        }
+        return `<span class="text-gray-300">${safeName}</span>`;
       }
 
       // Check if a date string in format "M/D/YYYY" is brand new (within 30 days of the dynamically fetched current date)
@@ -315,7 +336,9 @@
 
         // Construct the marquee text announcements
         const textParts = brandNewExtensions.map((ext) => {
-          return `NEW EXTENSION: <span class="text-white font-bold">${ext.Name}</span> by ${parseAuthorString(ext.By).name}!`;
+          const safeName = escapeHtml(ext.Name);
+          const safeAuthor = escapeHtml(parseAuthorString(ext.By).name);
+          return `NEW EXTENSION: <span class="text-white font-bold">${safeName}</span> by ${safeAuthor}!`;
         });
 
         // Combine messages with clear spacing
@@ -343,6 +366,11 @@
 
         extensions.forEach((ext) => {
           const authorData = parseAuthorString(ext.By);
+          const safeName = escapeHtml(ext.Name);
+          const safeId = escapeHtml(ext.ID);
+          const safeDescription = escapeHtml(ext.Description);
+          const safeVersion = escapeHtml(ext.Version);
+          const safeLicense = escapeHtml(ext.License);
           const originalHtml =
             ext.Original.length > 0
               ? `<div class="text-xs text-tw-textMuted mt-1">
@@ -366,26 +394,26 @@
           card.innerHTML = `
                     <div class="flex justify-between items-start mb-3">
                         <h2 class="text-xl font-bold text-white leading-tight flex items-center flex-wrap gap-1">
-                          ${ext.Name}
+                          ${safeName}
                           ${brandNewBadge}
                         </h2>
-                        <span class="bg-gray-800 text-gray-300 text-xs font-mono px-2 py-1 rounded-none border border-gray-700">${ext.ID}</span>
+                        <span class="bg-gray-800 text-gray-300 text-xs font-mono px-2 py-1 rounded-none border border-gray-700">${safeId}</span>
                     </div>
                     
-                    <p class="text-sm text-gray-300 flex-grow mb-4 leading-relaxed">${ext.Description}</p>
+                      <p class="text-sm text-gray-300 flex-grow mb-4 leading-relaxed">${safeDescription}</p>
                     
                     <div class="mt-auto pt-4 border-t border-gray-800 space-y-2">
                         <div class="flex justify-between items-center">
                             <div class="text-sm">
                                 <span class="text-tw-textMuted">By</span> ${generateAuthorLink(authorData)}
                             </div>
-                            <span class="text-xs font-mono bg-gray-800/50 text-gray-400 px-2 py-0.5 rounded-none">${ext.Version}</span>
+                          <span class="text-xs font-mono bg-gray-800/50 text-gray-400 px-2 py-0.5 rounded-none">${safeVersion}</span>
                         </div>
                         
                         ${originalHtml}
                         
                         <div class="flex justify-between items-center pt-2">
-                            <span class="text-xs text-gray-500 border border-gray-700 rounded-none px-1.5 py-0.5">${ext.License}</span>
+                          <span class="text-xs text-gray-500 border border-gray-700 rounded-none px-1.5 py-0.5">${safeLicense}</span>
                             <a href="${extensionURL}" download="${ext.path.split("/").pop()}" class="text-sm bg-tw-violet hover:bg-tw-violetHover text-white font-medium py-1.5 px-3 rounded-none flex items-center gap-1.5 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                                 Download
