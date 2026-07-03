@@ -478,10 +478,12 @@
         const searchInput = document.getElementById("searchInput");
 
         try {
-          // Dynamic time service fetch
-          galleryCurrentDate = await fetchCurrentDate();
+          const datePromise = fetchCurrentDate();
+          const listPromise = fetch("extensions.json");
+          const [currentDate, listRes] = await Promise.all([datePromise, listPromise]);
 
-          const listRes = await fetch("extensions.json");
+          galleryCurrentDate = currentDate;
+
           if (!listRes.ok) throw new Error("Failed to load extensions.json");
           const extensionPaths = await listRes.json();
 
