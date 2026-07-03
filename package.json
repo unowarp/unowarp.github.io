@@ -1,0 +1,26 @@
+{
+  "name": "@unowarp/unowarp.github.io",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Explore unsandboxed extensions developed by the community, for the community",
+  "scripts": {
+    "lint": "npm run lint:eslint && npm run lint:html && npm run lint:md",
+    "lint:eslint": "eslint . --max-warnings=0 --no-error-on-unmatched-pattern",
+    "lint:html": "htmlhint \"src/**/*.html\"",
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "serve": "http-server ./src -p 4173 -c-1",
+    "start": "npm run serve"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.31.0",
+    "eslint": "^9.31.0",
+    "esquery": "^1.6.0",
+    "globals": "^16.3.0",
+    "htmlhint": "^1.6.3",
+    "http-server": "^14.1.1",
+    "markdownlint-cli2": "^0.23.0",
+    "prettier": "^3.6.2"
+  }
+}

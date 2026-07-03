@@ -1,6 +1,6 @@
 # Description
 
-<!-- A clear and concise description of what this pull request does. -->
+<!-- Summarize what changed and why. -->
 
 Closes #<issue-number> (if applicable, otherwise remove this line)
 
@@ -17,6 +17,6 @@ Closes #<issue-number> (if applicable, otherwise remove this line)
 ## Checklist
 
 - [ ] My changes follow the project's style guidelines
+- [ ] I ran `npm run lint` locally
 - [ ] I have added or updated documentation where necessary
-- [ ] I have added or updated tests where necessary
-- [ ] All tests pass locally
+- [ ] I updated `src/extensions.json` when adding/removing extension files

@@ -4,35 +4,58 @@
 -->
 
 <div align="center">
-  <img src="assets/icon.svg" alt="Project Name logo" width="50" />
-  <h1>Project Name</h1>
+  <img src="assets/icon.svg" alt="UnoWarp Extensions logo" width="50" />
+  <h1>UnoWarp Extensions</h1>
 </div>
 
-A somewhat detailed overview of the project. It should be about one or two sentences long, and not contain any technical details if they aren't explained.
+UnoWarp Extensions is a static gallery that lists and distributes unsandboxed UnoWarp extension files created by the community.
 
 ## Getting Started
 
 ### Prerequisites
 
-Does this software have any dependencies? Does it require Node.js or Python to be installed, for example?
+- Node.js 18+
+- npm 9+
 
 ### Installation
 
-Include steps on:
+1. Clone the repository:
 
-1. How to install the software
-2. How to get acquainted with the software
-3. Finally, what to do afterwards.
+   ```sh
+   git clone https://github.com/unowarp/unowarp.github.io.git
+   cd unowarp.github.io
+   ```
+
+2. Install dependencies:
+
+   ```sh
+   npm install
+   ```
+
+3. Start the local site:
+
+   ```sh
+   npm start
+   ```
+
+4. Open [http://127.0.0.1:4173](http://127.0.0.1:4173).
+
+### Quality Checks
+
+Run linting and formatting checks before submitting changes:
+
+```sh
+npm run lint
+npm run format:check
+```
 
 ## Contact
 
-Include the contact details of either the owner organization or repository-specific contacts. Example:
-
-- **Email:** <johndoe@example.com>
-- **Mastodon:** `@john@example.com`
-- **X.com:** `@john`
-
-<!-- If your project does not have any documentation, remove the section below ("Documentation"). -->
+- GitHub organization: [unowarp](https://github.com/unowarp)
+- Project repository:
+  [unowarp/unowarp.github.io](https://github.com/unowarp/unowarp.github.io)
+- Issues:
+  [unowarp/unowarp.github.io/issues](https://github.com/unowarp/unowarp.github.io/issues)
 
 ## Documentation
 
@@ -40,4 +63,4 @@ For an enhanced guide on how to use the software, see [the table of contents](./
 
 ## Licensing
 
-Project Name is distributed under the License Name license. See the [license file](./LICENSE.txt).
+UnoWarp Extensions is distributed under the MIT license. See the [license file](./LICENSE.txt).
