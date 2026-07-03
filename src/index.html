@@ -92,17 +92,14 @@
     <!-- Main Content Grid Wrapper -->
     <div class="max-w-7xl mx-auto w-full p-4 md:p-8">
       <!-- Header -->
-      <header
-        class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4"
-      >
+      <header class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 class="text-3xl font-bold text-tw-violet flex items-center gap-3">
             <img src="icon.svg" alt="UnoWarp Logo" class="w-8 h-8" />
             UnoWarp Extensions
           </h1>
           <p class="text-tw-textMuted mt-1">
-            Explore unsandboxed extensions developed by the community, for the
-            community
+            Explore unsandboxed extensions developed by the community, for the community
           </p>
         </div>
 
@@ -159,12 +156,10 @@
         id="errorState"
         class="hidden bg-red-900/30 border border-red-500 rounded-none p-6 text-center"
       >
-        <h2 class="text-xl font-semibold text-red-400 mb-2">
-          Failed to Load Extensions
-        </h2>
+        <h2 class="text-xl font-semibold text-red-400 mb-2">Failed to Load Extensions</h2>
         <p id="errorMessage" class="text-gray-300">
-          Make sure you are serving this via a web server (like GitHub Pages or
-          Live Server), not via the file:// protocol.
+          Make sure you are serving this via a web server (like GitHub Pages or Live Server), not
+          via the file:// protocol.
         </p>
       </div>
 
@@ -197,10 +192,7 @@
     </div>
 
     <!-- Toast Notification Container -->
-    <div
-      id="toastContainer"
-      class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"
-    ></div>
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
 
     <script>
       let allExtensions = [];
@@ -328,7 +320,7 @@
 
         // Combine messages with clear spacing
         const joinedMessage = textParts.join(
-          " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ",
+          " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "
         );
         marqueeText.innerHTML = joinedMessage;
       }
@@ -359,10 +351,7 @@
                        </div>`
               : "";
 
-          const baseURL = window.location.href
-            .split("/")
-            .slice(0, -1)
-            .join("/");
+          const baseURL = window.location.href.split("/").slice(0, -1).join("/");
           const extensionURL = `${baseURL}/extensions/${ext.path}`;
 
           const card = document.createElement("div");
@@ -412,9 +401,7 @@
       // Fetch dynamic UTC date from a live web service API with automatic fallback
       async function fetchCurrentDate() {
         try {
-          const res = await fetch(
-            "https://worldtimeapi.org/api/timezone/Etc/UTC",
-          );
+          const res = await fetch("https://worldtimeapi.org/api/timezone/Etc/UTC");
           if (!res.ok) throw new Error("Time API non-200 status");
           const data = await res.json();
           if (data && data.datetime) {
@@ -423,7 +410,7 @@
         } catch (e) {
           console.warn(
             "Could not retrieve date from WorldTimeAPI. Falling back to local system clock.",
-            e,
+            e
           );
         }
         return new Date(); // Fallback to client system clock
@@ -468,17 +455,14 @@
           // Setup Search Logic
           searchInput.addEventListener("input", (e) => {
             const query = e.target.value.toLowerCase();
-            const filtered = allExtensions.filter((ext) =>
-              ext.searchIndex.includes(query),
-            );
+            const filtered = allExtensions.filter((ext) => ext.searchIndex.includes(query));
             renderCards(filtered);
           });
         } catch (err) {
           loading.classList.add("hidden");
           errorState.classList.remove("hidden");
           errorMessage.innerText =
-            err.message +
-            ". Are you running this over HTTP/HTTPS? file:// won't work due to CORS.";
+            err.message + ". Are you running this over HTTP/HTTPS? file:// won't work due to CORS.";
           console.error(err);
         }
       }
