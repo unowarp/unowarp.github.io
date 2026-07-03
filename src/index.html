@@ -70,6 +70,30 @@
           opacity: 1;
         }
       }
+
+      #marqueeText {
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      #marqueeText .marquee-track {
+        display: inline-flex;
+        min-width: max-content;
+        animation: marqueeScroll 30s linear infinite;
+      }
+
+      #marqueeText:hover .marquee-track {
+        animation-play-state: paused;
+      }
+
+      @keyframes marqueeScroll {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-50%);
+        }
+      }
     </style>
   </head>
   <body class="min-h-screen flex flex-col">
@@ -78,15 +102,12 @@
       id="marqueeContainer"
       class="hidden bg-purple-950/40 border-b border-tw-violet/30 text-tw-violet py-2.5 overflow-hidden w-full"
     >
-      <marquee
+      <div
         id="marqueeText"
         class="font-semibold uppercase tracking-wider text-sm cursor-pointer block"
-        scrollamount="6"
-        onmouseover="this.stop()"
-        onmouseout="this.start()"
       >
         <!-- Dynamically populated marquee content -->
-      </marquee>
+      </div>
     </div>
 
     <!-- Main Content Grid Wrapper -->
@@ -345,7 +366,12 @@
         const joinedMessage = textParts.join(
           " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "
         );
-        marqueeText.innerHTML = joinedMessage;
+        marqueeText.innerHTML = `
+          <div class="marquee-track" aria-label="New extensions announcements">
+            <span>${joinedMessage}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span aria-hidden="true">${joinedMessage}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          </div>
+        `;
       }
 
       // DOM Rendering
