@@ -1,0 +1,4 @@
+Your License!
+=============
+
+This is your license! Per .SETUP.MD, make sure to replace this file with your software's license.
