@@ -445,9 +445,7 @@
 
       const placeholder = "\uFFFF";
       const protectedPath = pathString.replace(/\\\./g, placeholder);
-      const parts = protectedPath
-        .split(".")
-        .map((p) => p.replace(new RegExp(placeholder, "g"), "."));
+      const parts = protectedPath.split(".").map((p) => p.split(placeholder).join("."));
 
       let current = root;
 

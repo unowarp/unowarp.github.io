@@ -281,7 +281,8 @@
         });
         const file = await fileHandle.getFile();
         const text = await file.text();
-        this.locks = JSON.parse(text);
+        const parsed = JSON.parse(text);
+        this.locks = parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
       } catch (e) {
         // File doesn't exist or is invalid, default to empty
         this.locks = {};
@@ -428,6 +429,10 @@
     }
 
     async _copyRecursive(srcParent, srcName, destParent, destName) {
+      if (destName !== "" && (await this._getType(destParent, destName)) !== null) {
+        throw new Error("Destination already exists.");
+      }
+
       const type = await this._getType(srcParent, srcName);
       if (type === "file") {
         const srcFileHandle = await srcParent.getFileHandle(srcName);
@@ -535,7 +540,7 @@
         if (p1.drive === p2.drive) {
           throw new Error("Source and destination are the same.");
         }
-        if (args.ACTION === "rename" && (await this._pathExists(p2))) {
+        if (await this._pathExists(p2)) {
           throw new Error("Destination already exists.");
         }
 
@@ -638,13 +643,16 @@
       });
     }
 
+    _isVisibleDriveName(name) {
+      return !!name && !name.startsWith(".") && !name.startsWith(".import-");
+    }
+
     allDrives() {
       return this._exec("[]", async () => {
         const root = await navigator.storage.getDirectory();
         let drives = [];
         for await (const [name, handle] of root.entries()) {
-          // Filter out the internal locks helper file
-          if (handle.kind === "directory" && name !== ".locks.json") {
+          if (handle.kind === "directory" && this._isVisibleDriveName(name)) {
             drives.push(name);
           }
         }
@@ -694,9 +702,15 @@
           bytes = new Uint8Array(binStr.length);
           for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
         } else if (args.FORMAT === "data: uri") {
-          const res = await Scratch.fetch(args.CONTENTS);
+          const contents = String(args.CONTENTS);
+          if (!/^data:/i.test(contents)) {
+            throw new Error("Expected a data URI.");
+          }
+          const res = await Scratch.fetch(contents);
           const buf = await res.arrayBuffer();
           bytes = new Uint8Array(buf);
+        } else {
+          throw new Error("Unsupported file format.");
         }
 
         const fileHandle = await parent.getFileHandle(name, { create: true });
@@ -731,7 +745,7 @@
         if (p1.full === p2.full) {
           throw new Error("Source and destination are the same.");
         }
-        if (args.ACTION === "rename" && (await this._pathExists(p2))) {
+        if (await this._pathExists(p2)) {
           throw new Error("Destination already exists.");
         }
 
@@ -759,6 +773,23 @@
         const { parent, name } = await this._getParentAndName(parsed);
         const fileHandle = await parent.getFileHandle(name);
         const file = await fileHandle.getFile();
+        const format = args.FORMAT || "plaintext";
+
+        if (format === "base64") {
+          const bytes = new Uint8Array(await file.arrayBuffer());
+          let binary = "";
+          for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+          return btoa(binary);
+        }
+
+        if (format === "data: uri") {
+          return await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(file);
+          });
+        }
+
         return await file.text();
       });
     }

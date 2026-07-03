@@ -285,6 +285,8 @@
           this.resolveAsk = null;
         }
 
+        this.visible = true;
+        this.canvas.style.display = "block";
         this.rawPrompt = args.PROMPT.toString();
         this.promptSegments = this.parseFormatting(this.rawPrompt);
         this.isAsking = true;
@@ -305,7 +307,7 @@
           }
 
           const indentStr = " ".repeat(log.indent);
-          const tsStr = this.formatTimestamp(log.realTime - this.startTime);
+          const tsStr = this.formatTimestamp(log.elapsedTime ?? log.realTime - this.startTime);
           let tagStr = this.typeStyles[log.type] ? this.typeStyles[log.type].tag : "";
 
           if (log.type === "loading") {
@@ -501,13 +503,15 @@
   TerminalExtension.prototype.addLog = function (type, message, spriteName) {
     const indent = this.activeLoaders.length * 2;
 
+    const now = Date.now();
     const log = {
-      id: Date.now() + Math.random(),
+      id: now + Math.random(),
       type,
       message,
       spriteName,
       indent,
-      realTime: Date.now(),
+      realTime: now,
+      elapsedTime: now - this.startTime,
       isFinalizedloading: false,
       finalState: null, // Tracks if closed as "completed" or "failed"
     };
@@ -544,7 +548,7 @@
       } else {
         const style = this.typeStyles[log.type] || this.typeStyles["info"];
         const indentStr = " ".repeat(log.indent);
-        const tsStr = this.formatTimestamp(log.realTime - this.startTime);
+        const tsStr = this.formatTimestamp(log.elapsedTime ?? log.realTime - this.startTime);
 
         let tagStr = style.tag;
         if (log.type === "loading") {
