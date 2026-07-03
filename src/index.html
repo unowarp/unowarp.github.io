@@ -70,6 +70,34 @@
           opacity: 1;
         }
       }
+
+      #marqueeText {
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      #marqueeText .marquee-track {
+        display: inline-flex;
+        min-width: max-content;
+        animation: none;
+      }
+
+      #marqueeText.marquee-ready .marquee-track {
+        animation: marqueeScroll 28s linear infinite;
+      }
+
+      #marqueeText:hover .marquee-track {
+        animation-play-state: paused;
+      }
+
+      @keyframes marqueeScroll {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-50%);
+        }
+      }
     </style>
   </head>
   <body class="min-h-screen flex flex-col">
@@ -78,15 +106,12 @@
       id="marqueeContainer"
       class="hidden bg-purple-950/40 border-b border-tw-violet/30 text-tw-violet py-2.5 overflow-hidden w-full"
     >
-      <marquee
+      <div
         id="marqueeText"
         class="font-semibold uppercase tracking-wider text-sm cursor-pointer block"
-        scrollamount="6"
-        onmouseover="this.stop()"
-        onmouseout="this.start()"
       >
         <!-- Dynamically populated marquee content -->
-      </marquee>
+      </div>
     </div>
 
     <!-- Main Content Grid Wrapper -->
@@ -338,14 +363,25 @@
         const textParts = brandNewExtensions.map((ext) => {
           const safeName = escapeHtml(ext.Name);
           const safeAuthor = escapeHtml(parseAuthorString(ext.By).name);
-          return `NEW EXTENSION: <span class="text-white font-bold">${safeName}</span> by ${safeAuthor}!`;
+          const safeDescription = escapeHtml(ext.Description);
+          return `NEW EXTENSION: <span class="text-white font-bold">${safeName}</span> by ${safeAuthor}! ${safeDescription} <span class="text-white font-bold">${safeName}</span> by ${safeAuthor}!`;
         });
 
         // Combine messages with clear spacing
         const joinedMessage = textParts.join(
           " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "
         );
-        marqueeText.innerHTML = joinedMessage;
+        marqueeText.innerHTML = `
+          <div class="marquee-track" aria-label="New extensions announcements">
+            <span>${joinedMessage}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span aria-hidden="true">${joinedMessage}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          </div>
+        `;
+
+        marqueeText.classList.remove("marquee-ready");
+        requestAnimationFrame(() => {
+          marqueeText.classList.add("marquee-ready");
+        });
       }
 
       // DOM Rendering
