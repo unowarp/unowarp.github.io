@@ -3,5 +3,5 @@
   "attr-value-double-quotes": true,
   "id-unique": true,
   "spec-char-escape": true,
-  "doctype-first": false
+  "doctype-first": true
 }
