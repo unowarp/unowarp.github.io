@@ -5,7 +5,7 @@
 // Original: KaneCoded <https://github.com/kanecoded>
 // License: LGPL-3.0-only
 
-// Version: 0.1.0
+// Version: 0.1.1
 // Created: 7/3/2026
 
 (function (Scratch) {
@@ -682,7 +682,8 @@
     this.ctx.fillStyle = `rgba(0, 0, 0, ${this.opacity})`;
     this.ctx.fillRect(0, 0, this.logicalWidth, this.logicalHeight);
 
-    this.ctx.textBaseline = "top";
+    // 1. Change baseline to middle
+    this.ctx.textBaseline = "middle";
 
     const displayInput = this.isPassword ? "*".repeat(this.currentInput.length) : this.currentInput;
     const promptWrapped = this.isAsking
@@ -701,10 +702,8 @@
       : [];
 
     const totalVisualLines = this.visualLines.concat(promptWrapped);
-
     const maxVisibleLines = Math.floor((this.logicalHeight - this.padding * 2) / this.lineHeight);
     const activeLinesCount = totalVisualLines.length;
-
     const maxScroll = Math.max(0, activeLinesCount - maxVisibleLines);
     this.scrollOffset = Math.max(0, Math.min(this.scrollOffset, maxScroll));
 
@@ -734,7 +733,8 @@
         this.ctx.font = `${fontStyle}${this.fontSize}px "Consolas", "Courier New", Courier, monospace`;
 
         this.ctx.fillStyle = seg.color;
-        this.ctx.fillText(seg.text, x, y);
+        // 2. Offset text Y-coordinate by half the line height
+        this.ctx.fillText(seg.text, x, y + this.lineHeight / 2);
 
         x += segWidth;
       }
@@ -745,7 +745,8 @@
         if (this.focused) {
           if (Date.now() % 1000 < 500) {
             this.ctx.fillStyle = "#FFFFFF";
-            this.ctx.fillText("█", x, y);
+            // 3. Offset the cursor Y-coordinate as well
+            this.ctx.fillText("█", x, y + this.lineHeight / 2);
           }
         }
       }
