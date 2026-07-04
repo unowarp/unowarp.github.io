@@ -28,7 +28,10 @@
           e.target.result.createObjectStore(STORE_NAME);
         };
         request.onsuccess = (e) => resolve(e.target.result);
-        request.onerror = (e) => reject(e.target.error);
+        request.onerror = (e) => {
+          dbPromise = null; // Clear cached promise on failure to allow retry
+          reject(e.target.error);
+        };
       });
     }
     return dbPromise;
@@ -139,7 +142,7 @@
     syncChannel = new BroadcastChannel("turbowarp_indexeddb_sync");
     syncChannel.onmessage = (event) => {
       if (getNamespace() && event.data.type === "sync" && event.data.key === getStorageKey()) {
-        readFromStorage().then(() => {
+        syncPromise = readFromStorage().then(() => {
           Scratch.vm.runtime.startHats("indexeddb_whenChanged");
         });
       }
@@ -293,6 +296,12 @@
         return "";
       }
       await syncPromise;
+
+      // Ensure VALUE is cast to a primitive, preventing mismatch caching bugs.
+      if (typeof VALUE !== "string" && typeof VALUE !== "number" && typeof VALUE !== "boolean") {
+        VALUE = Scratch.Cast.toString(VALUE);
+      }
+
       namespaceValues[Scratch.Cast.toString(KEY)] = VALUE;
       await saveToStorage();
     }
