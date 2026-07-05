@@ -1,1 +1,7 @@
-["codapaws/dictionaries.js", "codapaws/next4.js", "codapaws/signals.js", "codapaws/terminal.js"]
+[
+  "codapaws/dictionaries.js",
+  "codapaws/next4.js",
+  "codapaws/signals.js",
+  "codapaws/terminal.js",
+  "kanecoded/indexeddb.js"
+]
