@@ -402,7 +402,12 @@
 
     _stripFormatting(text) {
       // Removes tags so string length calculation is accurate for centering/aligning
-      return text.replace(/@([chbi])(?:([^:]*))?:(.*?)@\1/g, "$3");
+      let previousText;
+      do {
+        previousText = text;
+        text = text.replace(/@([chbi])(?:([^:]*))?:(.*?)@\1/g, "$3");
+      } while (text !== previousText);
+      return text;
     }
 
     replaceSpecificLine(args) {
