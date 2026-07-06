@@ -5,7 +5,7 @@
 // Original: KaneCoded <https://github.com/kanecoded>
 // License: LGPL-3.0-only
 
-// Version: 0.1.1
+// Version: 0.2.0
 // Created: 7/3/2026
 
 (function (Scratch) {
@@ -160,6 +160,76 @@
             blockType: Scratch.BlockType.REPORTER,
             text: Scratch.translate("terminal history"),
           },
+          "---",
+          {
+            opcode: "replaceSpecificLine",
+            blockType: Scratch.BlockType.COMMAND,
+            text: Scratch.translate("replace line [LINE] with [MESSAGE]"),
+            arguments: {
+              LINE: {
+                type: Scratch.ArgumentType.NUMBER,
+                defaultValue: 1,
+              },
+              MESSAGE: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "Updated log entry",
+              },
+            },
+          },
+          {
+            opcode: "centerText",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("center text [TEXT]"),
+            arguments: {
+              TEXT: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "MAIN MENU",
+              },
+            },
+          },
+          {
+            opcode: "alignRight",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("align right [TEXT]"),
+            arguments: {
+              TEXT: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "v1.0",
+              },
+            },
+          },
+          {
+            opcode: "createProgressBar",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("progress bar: val [VAL] / max [MAX] length [LEN]"),
+            arguments: {
+              VAL: { type: Scratch.ArgumentType.NUMBER, defaultValue: 50 },
+              MAX: { type: Scratch.ArgumentType.NUMBER, defaultValue: 100 },
+              LEN: { type: Scratch.ArgumentType.NUMBER, defaultValue: 20 },
+            },
+          },
+          {
+            opcode: "createDivider",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("divider with character [CHAR]"),
+            arguments: {
+              CHAR: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "-",
+              },
+            },
+          },
+          {
+            opcode: "formatTextBuilder",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("format [TEXT] color [COLOR] bold [BOLD] italic [ITALIC]"),
+            arguments: {
+              TEXT: { type: Scratch.ArgumentType.STRING, defaultValue: "Alert" },
+              COLOR: { type: Scratch.ArgumentType.COLOR, defaultValue: "#FF5555" },
+              BOLD: { type: Scratch.ArgumentType.STRING, menu: "onOffMenu", defaultValue: "on" },
+              ITALIC: { type: Scratch.ArgumentType.STRING, menu: "onOffMenu", defaultValue: "off" },
+            },
+          },
         ],
         menus: {
           terminalActionsMenu: {
@@ -271,7 +341,7 @@
       if (this.activeLoaders.length > 0) {
         const loader = this.activeLoaders.pop();
         loader.isFinalizedloading = true;
-        loader.finalState = args.STATE; // "completed" or "failed"
+        loader.finalState = args.STATE;
         this.scrollOffset = 0;
         this.recalculateVisualLines();
         this.draw();
@@ -323,6 +393,83 @@
           return `${tsStr} ${tagStr} ${spriteStr} : ${indentStr}${log.message}`;
         })
         .join("\n");
+    }
+
+    _getMaxChars() {
+      const cw = this.charWidth || this.fontSize * 0.55; // Fallback if canvas isn't rendered yet
+      return Math.max(1, Math.floor((this.logicalWidth - this.padding * 2) / cw));
+    }
+
+    _stripFormatting(text) {
+      // Removes tags so string length calculation is accurate for centering/aligning
+      let previousText;
+      do {
+        previousText = text;
+        text = text.replace(/@([chbi])(?:([^:]*))?:(.*?)@\1/g, "$3");
+      } while (text !== previousText);
+      return text;
+    }
+
+    replaceSpecificLine(args) {
+      const lineNum = Math.floor(Number(args.LINE));
+      const index = lineNum - 1; // Convert to 0-indexed for the array
+      if (index >= 0 && index < this.history.length) {
+        this.history[index].message = args.MESSAGE.toString();
+        this.recalculateVisualLines();
+        this.draw();
+      }
+    }
+
+    centerText(args) {
+      const text = args.TEXT.toString();
+      const maxChars = this._getMaxChars();
+      const plainLength = this._stripFormatting(text).length;
+
+      if (plainLength >= maxChars) return text;
+
+      const leftSpaces = Math.floor((maxChars - plainLength) / 2);
+      const rightSpaces = maxChars - plainLength - leftSpaces;
+      return " ".repeat(Math.max(0, leftSpaces)) + text + " ".repeat(Math.max(0, rightSpaces));
+    }
+
+    alignRight(args) {
+      const text = args.TEXT.toString();
+      const maxChars = this._getMaxChars();
+      const plainLength = this._stripFormatting(text).length;
+
+      if (plainLength >= maxChars) return text;
+
+      const spaces = maxChars - plainLength;
+      return " ".repeat(spaces) + text;
+    }
+
+    createProgressBar(args) {
+      const val = Number(args.VAL) || 0;
+      const max = Number(args.MAX) || 100;
+      const len = Math.max(5, Number(args.LEN) || 20);
+
+      const percent = Math.max(0, Math.min(1, val / max));
+      const innerLen = len - 2;
+      const filled = Math.floor(percent * innerLen);
+
+      const fillChars = "=".repeat(filled);
+      const emptyChars = " ".repeat(Math.max(0, innerLen - filled));
+
+      return `[${fillChars}${emptyChars}]`;
+    }
+
+    createDivider(args) {
+      const char = args.CHAR.toString().charAt(0) || "-";
+      const maxChars = this._getMaxChars();
+      return char.repeat(maxChars);
+    }
+
+    formatTextBuilder(args) {
+      let text = args.TEXT.toString();
+      if (args.BOLD === "on") text = `@b:${text}@b`;
+      if (args.ITALIC === "on") text = `@i:${text}@i`;
+      if (args.COLOR) text = `@c ${args.COLOR}:${text}@c`;
+      return text;
     }
   }
 
@@ -453,7 +600,7 @@
             this.canvas.height = physicalHeight;
 
             this.ctx.scale(physicalWidth / stageWidth, physicalHeight / stageHeight);
-            this.ctx.font = `${this.fontSize}px "Consolas", "Courier New", Courier, monospace`;
+            this.ctx.font = `${this.fontSize}px monospace`;
             this.ctx.textBaseline = "top";
             this.charWidth = this.ctx.measureText("M").width;
 
@@ -513,7 +660,7 @@
       realTime: now,
       elapsedTime: now - this.startTime,
       isFinalizedloading: false,
-      finalState: null, // Tracks if closed as "completed" or "failed"
+      finalState: null,
     };
 
     this.history.push(log);
@@ -682,7 +829,6 @@
     this.ctx.fillStyle = `rgba(0, 0, 0, ${this.opacity})`;
     this.ctx.fillRect(0, 0, this.logicalWidth, this.logicalHeight);
 
-    // 1. Change baseline to middle
     this.ctx.textBaseline = "middle";
 
     const displayInput = this.isPassword ? "*".repeat(this.currentInput.length) : this.currentInput;
@@ -730,22 +876,20 @@
         let fontStyle = "";
         if (seg.italic) fontStyle += "italic ";
         if (seg.bold) fontStyle += "bold ";
-        this.ctx.font = `${fontStyle}${this.fontSize}px "Consolas", "Courier New", Courier, monospace`;
+        this.ctx.font = `${fontStyle}${this.fontSize}px monospace`;
 
         this.ctx.fillStyle = seg.color;
-        // 2. Offset text Y-coordinate by half the line height
         this.ctx.fillText(seg.text, x, y + this.lineHeight / 2);
 
         x += segWidth;
       }
 
-      this.ctx.font = `${this.fontSize}px "Consolas", "Courier New", Courier, monospace`;
+      this.ctx.font = `${this.fontSize}px monospace`;
 
       if (this.isAsking && i === totalVisualLines.length - 1) {
         if (this.focused) {
           if (Date.now() % 1000 < 500) {
             this.ctx.fillStyle = "#FFFFFF";
-            // 3. Offset the cursor Y-coordinate as well
             this.ctx.fillText("█", x, y + this.lineHeight / 2);
           }
         }
