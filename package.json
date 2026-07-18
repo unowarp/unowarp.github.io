@@ -20,7 +20,7 @@
     "globals": "^17.7.0",
     "htmlhint": "^1.6.3",
     "http-server": "^14.1.1",
-    "markdownlint-cli2": "^0.23.0",
+    "markdownlint-cli2": "^0.23.1",
     "prettier": "^3.9.5"
   }
 }
