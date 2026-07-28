@@ -68,11 +68,7 @@
         // Start with existing persisted data
         if (existingData && existingData.data) {
           for (const [k, v] of Object.entries(existingData.data)) {
-            if (
-              typeof v === "string" ||
-              typeof v === "number" ||
-              typeof v === "boolean"
-            ) {
+            if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
               mergedData[k] = v;
             }
           }
