@@ -48,23 +48,60 @@
     });
   };
 
-  const idbSet = async (key, value) => {
+  /**
+   * Atomically read-modify-write: merge in-memory values with latest stored data
+   * @param {string} key - IndexedDB key
+   * @param {Record<string, string|number|boolean>} inMemoryValues - Current in-memory values
+   * @returns {Promise<void>}
+   */
+  const idbUpdate = async (key, inMemoryValues) => {
     const db = await initDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, "readwrite");
-      const request = tx.objectStore(STORE_NAME).put(value, key);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
-  };
+      const store = tx.objectStore(STORE_NAME);
+      const getRequest = store.get(key);
 
-  const idbRemove = async (key) => {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, "readwrite");
-      const request = tx.objectStore(STORE_NAME).delete(key);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+      getRequest.onsuccess = () => {
+        const existingData = getRequest.result;
+        const mergedData = Object.create(null);
+
+        // Start with existing persisted data
+        if (existingData && existingData.data) {
+          for (const [k, v] of Object.entries(existingData.data)) {
+            if (
+              typeof v === "string" ||
+              typeof v === "number" ||
+              typeof v === "boolean"
+            ) {
+              mergedData[k] = v;
+            }
+          }
+        }
+
+        // Merge in-memory values on top
+        for (const [k, v] of Object.entries(inMemoryValues)) {
+          mergedData[k] = v;
+        }
+
+        // If merged data is empty, delete the record; otherwise put it
+        let putRequest;
+        if (Object.keys(mergedData).length > 0) {
+          putRequest = store.put(
+            {
+              time: Math.round(Date.now() / 1000),
+              data: mergedData,
+            },
+            key
+          );
+        } else {
+          putRequest = store.delete(key);
+        }
+
+        putRequest.onsuccess = () => resolve();
+        putRequest.onerror = () => reject(putRequest.error);
+      };
+
+      getRequest.onerror = () => reject(getRequest.error);
     });
   };
 
@@ -138,14 +175,7 @@
   const saveToStorage = async (ns) => {
     try {
       const values = getValuesForNamespace(ns);
-      if (Object.keys(values).length > 0) {
-        await idbSet(getStorageKey(ns), {
-          time: Math.round(Date.now() / 1000),
-          data: values,
-        });
-      } else {
-        await idbRemove(getStorageKey(ns));
-      }
+      await idbUpdate(getStorageKey(ns), values);
 
       if (typeof BroadcastChannel !== "undefined") {
         syncChannel.postMessage({ type: "sync", key: getStorageKey(ns) });
@@ -205,6 +235,7 @@
 
   Scratch.vm.runtime.on("RUNTIME_DISPOSED", () => {
     namespaceValues.clear();
+    syncPromises.clear();
   });
 
   prepareInitialNamespace();
@@ -323,9 +354,12 @@
       if (SCOPE === "locally") {
         util.target.__bfIndexedDBNamespace = ns;
       } else {
+        // Set for all existing targets
         for (const target of Scratch.vm.runtime.targets) {
           target.__bfIndexedDBNamespace = ns;
         }
+        // Set globally so new targets inherit it
+        setGlobalNamespace(ns);
       }
       if (!syncPromises.has(ns)) {
         loadNamespace(ns);
