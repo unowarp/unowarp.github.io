@@ -5,7 +5,7 @@
 // Original: KaneCoded <https://github.com/kanecoded>
 // License: LGPL-3.0-only
 
-// Version: 0.1.1
+// Version: 0.1.2
 // Created: 7/3/2026
 
 (function (Scratch) {
@@ -45,8 +45,8 @@
 
           // If all threads spawned by this specific signal have completed naturally
           if (info.threads.length === 0) {
-            // Mark as success on the originating caller thread
-            const status = this._getStatus(info.target, info.callerThread);
+            // Mark as success on the originating target
+            const status = this._getStatus(info.target);
             status[info.type] = { success: true, code: "", message: "" };
 
             if (info.type === "check") {
@@ -60,15 +60,14 @@
       });
     }
 
-    _getStatus(target, callerThread) {
-      const scope = callerThread || target;
-      if (!scope.__signallingStatus) {
-        scope.__signallingStatus = {
+    _getStatus(target) {
+      if (!target.__signallingStatus) {
+        target.__signallingStatus = {
           action: { success: true, code: "", message: "" },
           check: { success: true, code: "", message: "" },
         };
       }
-      return scope.__signallingStatus;
+      return target.__signallingStatus;
     }
 
     _getConfig(target) {
@@ -96,7 +95,7 @@
       this._stopPendingSignal(pending);
 
       // Update the target's state for the new reporter blocks
-      const status = this._getStatus(pending.target, pending.callerThread);
+      const status = this._getStatus(pending.target);
       status[pending.type] = { success: false, code: code, message: name };
       const config = this._getConfig(pending.target);
 
@@ -412,7 +411,6 @@
           threads: [],
           resolve,
           target: util.target,
-          callerThread: util.thread,
           signalId,
           expiresAt: expiresAt,
           header: args.HEADER,
@@ -435,7 +433,7 @@
 
         if (threads.length === 0) {
           pendingSignals.delete(signalId);
-          const status = this._getStatus(util.target, util.thread);
+          const status = this._getStatus(util.target);
           status.action = { success: true, code: "", message: "" };
           resolve();
           return;
@@ -461,7 +459,6 @@
           threads: [],
           resolve,
           target: util.target,
-          callerThread: util.thread,
           signalId,
           expiresAt: expiresAt,
           header: args.HEADER,
@@ -484,7 +481,7 @@
 
         if (threads.length === 0) {
           pendingSignals.delete(signalId);
-          const status = this._getStatus(util.target, util.thread);
+          const status = this._getStatus(util.target);
           status.check = { success: true, code: "", message: "" };
           resolve("");
           return;
@@ -575,7 +572,7 @@
       if (ctx && ctx.signalId) {
         const pending = pendingSignals.get(ctx.signalId);
         if (pending) {
-          const status = this._getStatus(pending.target, pending.callerThread);
+          const status = this._getStatus(pending.target);
           status[pending.type] = { success: true, code: "", message: "" };
 
           if (pending.type === "check") {
@@ -611,7 +608,11 @@
 
     didLastSucceed(args, util) {
       const type = args.TYPE;
-      const status = this._getStatus(util.target, util.thread);
+      const errorContext = util.thread.__signallingErrorContext;
+      if (errorContext && errorContext.type === type) {
+        return false;
+      }
+      const status = this._getStatus(util.target);
       return status[type].success;
     }
 
@@ -622,7 +623,7 @@
       if (errorContext && errorContext.type === type) {
         return errorContext[prop] || "";
       }
-      const status = this._getStatus(util.target, util.thread);
+      const status = this._getStatus(util.target);
       return status[type][prop] || "";
     }
 
